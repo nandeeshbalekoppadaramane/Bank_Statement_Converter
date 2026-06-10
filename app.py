@@ -226,7 +226,7 @@ st.markdown("""
         I love exploring technologies and creating intuitive, user-friendly applications that solve real-world problems.
     </div>
     <div class="social-links">
-        Let's connect: <a href="YOUR_LINKEDIN_URL_HERE" target="_blank">LinkedIn</a>
+        Let's connect: <a href="https://www.linkedin.com/in/nandeesh-balekoppadaramane" target="_blank">LinkedIn</a>
     </div>
 </div>
 """, unsafe_allow_html=True)
