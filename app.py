@@ -222,8 +222,9 @@ st.markdown("""
 <div class="creator-card">
     <div class="creator-name">👨‍💻 About the Creator: Nandeesh</div>
     <div class="creator-bio">
-        Hi! I'm <strong>Nandeesh</strong>, a passionate developer dedicated to building tools that make data processing easier and more efficient. 
-        I love exploring technologies and creating intuitive, user-friendly applications that solve real-world problems.
+        Hi! I'm <strong>Nandeesh</strong>, a CA Final Student who loves coding as a hobby. 
+        I built this application to make financial data processing easier and more efficient. 
+        If you found this useful or need more custom tools like this, feel free to reach out and find me on LinkedIn!
     </div>
     <div class="social-links">
         Let's connect: <a href="https://www.linkedin.com/in/nandeesh-balekoppadaramane" target="_blank">LinkedIn</a>
