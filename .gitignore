@@ -1,0 +1,6 @@
+*.pdf
+*.xlsx
+__pycache__/
+.venv/
+venv/
+.streamlit/
