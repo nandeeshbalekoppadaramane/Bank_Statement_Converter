@@ -1,12 +1,13 @@
 import streamlit as st
 import tempfile
 import os
-import parsers
+from src import base_parse
+from web import css_config, html_config, md_config, general_config
 
 # Configure the page
 st.set_page_config(
-    page_title="Bank Statement Converter",
-    page_icon="🏦",
+    page_title=general_config.PAGE_TITLE,
+    page_icon=general_config.PAGE_ICON,
     layout="wide",
     initial_sidebar_state="collapsed", # Collapse sidebar to give more focus
 )
@@ -15,7 +16,7 @@ st.set_page_config(
 if 'step' not in st.session_state:
     st.session_state.step = 'select_bank'
 if 'selected_bank' not in st.session_state:
-    st.session_state.selected_bank = "Select a Bank..."
+    st.session_state.selected_bank = general_config.SELECT_BANK_DEFAULT
 if 'df_extracted' not in st.session_state:
     st.session_state.df_extracted = None
 if 'excel_data' not in st.session_state:
@@ -23,87 +24,17 @@ if 'excel_data' not in st.session_state:
 
 def reset_app():
     st.session_state.step = 'select_bank'
-    st.session_state.selected_bank = "Select a Bank..."
+    st.session_state.selected_bank = general_config.SELECT_BANK_DEFAULT
     st.session_state.df_extracted = None
     st.session_state.excel_data = None
 
-# Custom CSS for better aesthetics
-st.markdown("""
-<style>
-    /* Header styling */
-    h1 {
-        color: #1e3d59;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        text-align: center;
-    }
-    
-    /* Subheader styling */
-    h2, h3 {
-        color: #ff6e40;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    /* Creator section styling */
-    .creator-card {
-        background-color: #f1f5f9;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-top: 50px;
-        border-left: 5px solid #ff6e40;
-    }
-    
-    .creator-name {
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #1e3d59;
-        margin-bottom: 5px;
-    }
-    
-    .creator-bio {
-        color: #475569;
-        font-size: 1em;
-        margin-bottom: 10px;
-        line-height: 1.5;
-    }
-    
-    .social-links a {
-        color: #0077b5; /* LinkedIn Blue */
-        text-decoration: none;
-        font-weight: bold;
-    }
-    
-    .social-links a:hover {
-        text-decoration: underline;
-    }
-    
-    /* Styling the uploader area to be large and prominent */
-    .stFileUploader > div > div {
-        background-color: #f8fafc;
-        border-radius: 15px;
-        padding: 50px !important;
-        border: 2px dashed #0077b5;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-    
-    .stFileUploader > div > div:hover {
-        background-color: #e0f2fe;
-        border-color: #0284c7;
-    }
-    
-    /* Center text */
-    .center-text {
-        text-align: center;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Apply Custom CSS
+st.markdown(css_config.CUSTOM_CSS, unsafe_allow_html=True)
 
-
-# Main Content
-st.title("🏦 Bank Statement Converter")
-st.markdown("<p class='center-text'>Easily convert your bank statements into a clean, unified Excel format.</p>", unsafe_allow_html=True)
-st.markdown("---")
+# Header Section
+st.markdown(md_config.MAIN_TITLE_MD)
+st.markdown(html_config.HEADER_DESC_HTML, unsafe_allow_html=True)
+st.markdown(md_config.DIVIDER_MD)
 
 # ==========================================
 # STEP 1: Select Bank
@@ -111,26 +42,24 @@ st.markdown("---")
 if st.session_state.step == 'select_bank':
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.subheader("1. Select Your Bank")
+        st.subheader(general_config.SUBHEADER_SELECT_BANK)
+        
+        available_parsers = base_parse.get_available_parsers()
+        supported_banks = [b.title() + " Bank" for b in available_parsers.keys()]
         
         banks = [
-            "Select a Bank...",
-            "Canara Bank",
-            "HDFC Bank",
-            "Union Bank",
-            "ICICI Bank (Coming Soon)",
-            "State Bank of India (Coming Soon)"
-        ]
+            general_config.SELECT_BANK_DEFAULT,
+        ] + supported_banks + general_config.SUPPORT_COMING_SOON
         
-        selected_bank = st.selectbox("Choose the bank whose statement you want to convert:", banks)
+        selected_bank = st.selectbox(general_config.SELECTBOX_LABEL, banks)
         
-        if selected_bank not in ["Select a Bank...", "Canara Bank", "HDFC Bank", "Union Bank"]:
-            st.warning(f"Support for **{selected_bank}** is coming soon. Please select Canara, HDFC or Union Bank.")
-        elif selected_bank != "Select a Bank...":
+        if selected_bank != general_config.SELECT_BANK_DEFAULT and "(Coming Soon)" in selected_bank:
+            st.warning(general_config.MSG_COMING_SOON.format(bank=selected_bank))
+        elif selected_bank != general_config.SELECT_BANK_DEFAULT:
             st.session_state.selected_bank = selected_bank
-            st.success(f"Bank Selected: **{selected_bank}**")
+            st.success(general_config.MSG_BANK_SELECTED.format(bank=selected_bank))
             
-            if st.button("Next: Upload Statement ➡️", type="primary", use_container_width=True):
+            if st.button(general_config.BTN_NEXT, type="primary", use_container_width=True):
                 st.session_state.step = 'upload_file'
                 st.rerun()
 
@@ -140,24 +69,24 @@ if st.session_state.step == 'select_bank':
 elif st.session_state.step == 'upload_file':
     col1, col2, col3 = st.columns([1, 4, 1])
     with col2:
-        st.button("⬅️ Back to Bank Selection", on_click=reset_app)
-        st.subheader(f"2. Upload {st.session_state.selected_bank} Statement")
+        st.button(general_config.BTN_BACK, on_click=reset_app)
+        st.subheader(general_config.SUBHEADER_UPLOAD_FILE.format(bank=st.session_state.selected_bank))
         
-        uploaded_file = st.file_uploader("Drag and drop your PDF statement here", type=['pdf'])
+        uploaded_file = st.file_uploader(general_config.FILE_UPLOADER_LABEL, type=['pdf'])
         
         if uploaded_file is not None:
-            st.success(f"File **{uploaded_file.name}** ready for processing!")
+            st.success(general_config.MSG_FILE_READY.format(filename=uploaded_file.name))
             
-            if st.button("Process & Convert to Excel 🚀", type="primary", use_container_width=True):
+            if st.button(general_config.BTN_PROCESS, type="primary", use_container_width=True):
                 # Progress Area
-                st.markdown("### ⚙️ Processing your file...")
+                st.markdown(md_config.PROCESSING_MD)
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
                 def update_progress(current, total):
                     percent = int((current / total) * 100)
                     progress_bar.progress(percent)
-                    status_text.text(f"Processing page {current} of {total}...")
+                    status_text.text(general_config.MSG_PROCESSING_PAGE.format(current=current, total=total))
                 
                 try:
                     # Save uploaded file to temp path
@@ -169,12 +98,8 @@ elif st.session_state.step == 'upload_file':
                     temp_excel_path = temp_pdf_path.replace(".pdf", ".xlsx")
                     
                     # Call appropriate parser
-                    if st.session_state.selected_bank == "Canara Bank":
-                        df_extracted = parsers.parse_canara_statement(temp_pdf_path, temp_excel_path, update_progress)
-                    elif st.session_state.selected_bank == "HDFC Bank":
-                        df_extracted = parsers.parse_hdfc_statement(temp_pdf_path, temp_excel_path, update_progress)
-                    elif st.session_state.selected_bank == "Union Bank":
-                        df_extracted = parsers.parse_union_statement(temp_pdf_path, temp_excel_path, update_progress)
+                    bank_key = st.session_state.selected_bank.split(" ")[0].lower()
+                    df_extracted = base_parse.parse_statement(bank_key, temp_pdf_path, temp_excel_path, update_progress)
                         
                     # Read the generated Excel file to memory
                     with open(temp_excel_path, "rb") as f:
@@ -191,18 +116,18 @@ elif st.session_state.step == 'upload_file':
                     st.rerun()
                     
                 except Exception as e:
-                    status_text.error(f"An error occurred during conversion: {str(e)}")
+                    status_text.error(general_config.MSG_ERROR.format(error=str(e)))
 
 # ==========================================
 # STEP 4: Results (Table only)
 # ==========================================
 elif st.session_state.step == 'results':
-    st.success(f"✅ Extraction Complete! Found {len(st.session_state.df_extracted)} transactions.")
+    st.success(general_config.MSG_EXTRACTION_COMPLETE.format(count=len(st.session_state.df_extracted)))
     
     col_dl, col_reset = st.columns([1, 1])
     with col_dl:
         st.download_button(
-            label="⬇️ Download Full Excel File",
+            label=general_config.BTN_DOWNLOAD,
             data=st.session_state.excel_data,
             file_name=f"{st.session_state.selected_bank}_Converted.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -210,24 +135,11 @@ elif st.session_state.step == 'results':
             use_container_width=True
         )
     with col_reset:
-        st.button("🔄 Convert Another File", on_click=reset_app, use_container_width=True)
+        st.button(general_config.BTN_RESET, on_click=reset_app, use_container_width=True)
         
-    st.subheader("📊 Extracted Transactions")
+    st.subheader(general_config.SUBHEADER_RESULTS)
     st.dataframe(st.session_state.df_extracted, use_container_width=True)
 
-st.markdown("---")
-
-# Creator Section
-st.markdown("""
-<div class="creator-card">
-    <div class="creator-name">👨‍💻 About the Creator: Nandeesh</div>
-    <div class="creator-bio">
-        Hi! I'm <strong>Nandeesh</strong>, a CA Final Student who loves coding as a hobby. 
-        I built this application to make financial data processing easier and more efficient. 
-        If you found this useful or need more custom tools like this, feel free to reach out and find me on LinkedIn!
-    </div>
-    <div class="social-links">
-        Let's connect: <a href="https://www.linkedin.com/in/nandeesh-balekoppadaramane" target="_blank">LinkedIn</a>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+# Footer Section
+st.markdown(md_config.DIVIDER_MD)
+st.markdown(html_config.FOOTER_HTML, unsafe_allow_html=True)
