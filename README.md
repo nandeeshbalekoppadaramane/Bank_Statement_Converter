@@ -3,7 +3,7 @@
 A modular and extensible tool to convert PDF bank statements into clean, unified Excel formats. This project supports multiple bank formats and provides both a user-friendly Web UI and a powerful Command Line Interface (CLI).
 
 > [!NOTE]
-> This project is a forked and significantly improved version of the original [Bank_Statement_Converter](https://github.com/nandeeshbalekoppadaramane/Bank_Statement_Converter) developed by **Nandeesh**. This version introduces a **modular rewrite** for better extensibility and full **CLI support** for automated workflows.
+> This repo is the **modular rewrite** of the original single-file bank statement converter. It restructures the project for extensibility (drop-in bank parsers) and adds full **CLI support** for automated workflows.
 
 ## Features
 
