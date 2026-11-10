@@ -36,8 +36,8 @@ A modular and extensible tool to convert PDF bank statements into clean, unified
 
 1.  **Clone the repository**:
     ```bash
-    git clone <repository-url>
-    cd project-bank_stmnt_parser
+    git clone https://github.com/nandeeshbalekoppadaramane/Bank_Statement_Converter.git
+    cd Bank_Statement_Converter
     ```
 
 2.  **Install dependencies**:
